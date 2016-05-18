@@ -1,0 +1,31 @@
+nodes = [
+  {
+    hostname: 'server',
+    ip: '192.168.199.90',
+    ram: '1024'
+  },
+  {
+    hostname: 'client',
+    ip: '192.168.199.91'
+  }
+]
+
+Vagrant.configure("2") do |config|
+  nodes.each do |node|
+    config.vm.define node[:hostname] do |nodeconfig|
+      nodeconfig.vm.box = node[:box] ? node[:box] : 'bento/centos-7.1'
+      nodeconfig.vm.hostname = node[:hostname] + '.box'
+
+      nodeconfig.vm.network :private_network, ip: node[:ip]
+
+      memory = node[:ram] ? node[:ram] : 512;
+      nodeconfig.vm.provider :virtualbox do |vb|
+        vb.customize [
+          'modifyvm', :id,
+          '--cpuexecutioncap', '50',
+          '--memory', memory.to_s,
+        ]
+      end
+    end
+  end
+end
